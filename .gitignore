@@ -2,10 +2,8 @@ bin/
 obj/
 Logs/
 
-appsettings.json
-appsettings.Development.json
 appsettings.Production.json
-
+appsettings.*.local.json
 secrets.json
 
 .vs/

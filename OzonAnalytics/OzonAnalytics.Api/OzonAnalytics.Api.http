@@ -1,0 +1,6 @@
+@OzonAnalytics.Api_HostAddress = http://localhost:5241
+
+GET {{OzonAnalytics.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
