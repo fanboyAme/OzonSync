@@ -2,7 +2,7 @@
 
 namespace OzonAnalytics.Domain.Entities
 {
-    public class Shops
+    public class Shop
     {
         public Guid Id { get; private set; }
         public Guid UserId { get; private set; }
@@ -13,7 +13,7 @@ namespace OzonAnalytics.Domain.Entities
         public DateTime LastSyncedAt { get; private set; }
         public bool IsActive { get; private set; } = true;
 
-        public Shops(Guid userId, string ozonClientId, string ozonApiKeyEncrypted, string name)
+        public Shop(Guid userId, string ozonClientId, string ozonApiKeyEncrypted, string name)
         {
             Id = Guid.NewGuid();
             UserId = userId;
