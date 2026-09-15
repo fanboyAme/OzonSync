@@ -1,6 +1,7 @@
 ﻿using OzonAnalytics.Infrastructure.Database;
 using OzonAnalytics.Application.ProjectDtos.UserDtos;
 using Microsoft.EntityFrameworkCore;
+using OzonAnalytics.Domain.Entities;
 
 
 namespace OzonAnalytics.Infrastructure.Repositories.UserRepository
@@ -12,10 +13,15 @@ namespace OzonAnalytics.Infrastructure.Repositories.UserRepository
         {
             _db = db;
         }
-        public async Task<bool> IsEmailTakenAsync(string email)
+        public async Task<bool> AddAsync(RefreshToken refreshToken)
         {
-            return await _db.ApplicationUsers.AnyAsync(u => u.Email == email);
+            await _db.RefreshTokens.AddAsync(refreshToken);
+            return true;
         }
-        
+        public async Task<bool> SaveChangesAsync()
+        {
+            await _db.SaveChangesAsync();
+            return true;
+        }
     }
 }

@@ -19,6 +19,10 @@ namespace OzonAnalytics.Infrastructure.Database
         {
             base.OnModelCreating(modelBuilder);
 
+            modelBuilder.Entity<ApplicationUser>()
+                .HasIndex(ap => ap.NormalizedEmail)
+                .IsUnique();
+
             modelBuilder.Entity<Order>()
                 .HasOne<Shop>()
                 .WithMany()
