@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using OzonAnalytics.Application.Interfaces.Auth;
 using OzonAnalytics.Domain.Entities;
 using System;
 using System.Collections.Generic;
@@ -11,7 +12,7 @@ using System.Text;
 
 namespace OzonAnalytics.Infrastructure.Auth
 {
-    public class JwtTokenGenerator
+    public class JwtTokenGenerator : IJwtTokenGenerator
     {
         private readonly JwtOptions _config;
         
@@ -30,7 +31,7 @@ namespace OzonAnalytics.Infrastructure.Auth
 
             var token = new JwtSecurityToken
                 (
-                issuer: _config.Issure,
+                issuer: _config.Issuer,
                 audience: _config.Audience,
                 claims: claim,
                 expires: DateTime.UtcNow.AddMinutes(_config.TimeAlive),

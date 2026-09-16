@@ -2,11 +2,12 @@
 using OzonAnalytics.Application.ProjectDtos.UserDtos;
 using Microsoft.EntityFrameworkCore;
 using OzonAnalytics.Domain.Entities;
+using OzonAnalytics.Application.Interfaces.Repositories;
 
 
 namespace OzonAnalytics.Infrastructure.Repositories.UserRepository
 {
-    public class UserRepository
+    public class UserRepository: IUserRepository
     {
         private readonly ApplicationDbContext _db;
         public UserRepository(ApplicationDbContext db)

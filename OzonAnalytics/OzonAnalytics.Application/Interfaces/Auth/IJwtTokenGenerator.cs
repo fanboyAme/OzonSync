@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace OzonAnalytics.Application.Interfaces.Repositories
+namespace OzonAnalytics.Application.Interfaces.Auth
 {
     public interface IJwtTokenGenerator
     {
