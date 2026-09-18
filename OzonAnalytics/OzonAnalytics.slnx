@@ -1,1 +1,8 @@
-<Solution />
+<Solution>
+  <Project Path="OzonAnalytics.Api/OzonAnalytics.Api.csproj" />
+  <Project Path="OzonAnalytics.Application/OzonAnalytics.Application.csproj" />
+  <Project Path="OzonAnalytics.Domain/OzonAnalytics.Domain.csproj" />
+  <Project Path="OzonAnalytics.Infrastructure/OzonAnalytics.Infrastructure.csproj" />
+  <Project Path="OzonAnalytics.Tests/OzonAnalytics.Tests.csproj" />
+  <Project Path="OzonAnalytics.Worker/OzonAnalytics.Worker.csproj" />
+</Solution>

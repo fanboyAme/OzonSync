@@ -1,7 +1,7 @@
 ﻿
 namespace OzonAnalytics.Domain.Entities
 {
-    public class RefreshTokens
+    public class RefreshToken
     {
         public Guid Id { get; private set; }
         public Guid UserId { get; private set; }
@@ -9,7 +9,7 @@ namespace OzonAnalytics.Domain.Entities
         public DateTime ExpiresAt { get; private set; }
         public bool Revoked { get; private set;  }
 
-        public RefreshTokens(Guid userId, string tokenHash)
+        public RefreshToken(Guid userId, string tokenHash)
         {
             Id = Guid.NewGuid();
             UserId = userId;

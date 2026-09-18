@@ -2,16 +2,16 @@
 
 namespace OzonAnalytics.Domain.Entities
 {
-    internal class Orders
+    public class Order
     {
         public Guid Id { get; set; }
         public Guid ShopId { get; set; }
         public long OzonOrderId { get; set; }
-        public OrderStatus Status { get; set; }
+        public OrderStatus Status { get; set; } //public enum OrderStatus { New, Processing, Delivered, Cancelled, Returned}
         public DateTime CreatedAt { get; set; }
         public DateTime InProccesAt { get; set; }
 
-        public Orders(Guid shopId, long ozonOrderId, OrderStatus status, DateTime createdAt, DateTime inProccesAt)
+        public Order(Guid shopId, long ozonOrderId, OrderStatus status, DateTime createdAt, DateTime inProccesAt)
         {
             Id = Guid.NewGuid();
             OzonOrderId = ozonOrderId;
