@@ -9,6 +9,6 @@ namespace OzonAnalytics.Application.Interfaces.Auth
     public interface IAuthService
     {
         public Task<string?> RegistrationAsync(UserRegistrationDto userRegistrationDto);
-        public Task<AuthResponceDto> AuthorizationAsync(UserAuthDto userAuthDto);
+        public Task<AuthResponceDto> AuthorizationAsync(UserAuthDto userAuthDto, CancellationToken ct);
     }
 }

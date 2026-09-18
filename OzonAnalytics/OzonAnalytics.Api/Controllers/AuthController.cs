@@ -21,9 +21,9 @@ namespace OzonAnalytics.Api.Controllers
             return Ok(reg);
         }
         [HttpPost("Login")]
-        public async Task<IActionResult> Authorization(UserAuthDto userAuthDto)
+        public async Task<IActionResult> Authorization(UserAuthDto userAuthDto, CancellationToken ct)
         {
-            var auth = await _authService.AuthorizationAsync(userAuthDto);
+            var auth = await _authService.AuthorizationAsync(userAuthDto, ct);
             return Ok(new { auth.AccessToken, auth.RefreshToken });
         }
     }
