@@ -1,4 +1,4 @@
-﻿namespace OzonAnalytics.Application.Interfaces.Shop
+﻿namespace OzonAnalytics.Application.Interfaces.Security
 {
     public interface IEncryptionService
     {

@@ -19,7 +19,8 @@ namespace OzonAnalytics.Infrastructure.Repositories.ShopRepository
                 shop.UserId,
                 shop.OzonClientId,
                 shop.OzonApiKeyEncrypted,
-                shop.Name
+                shop.Name,
+                shop.OzonApiKeyExpiresAt
             );
 
             await _db.AddAsync(newShop, ct);
@@ -34,7 +35,7 @@ namespace OzonAnalytics.Infrastructure.Repositories.ShopRepository
         {
             return await _db.Shops.Where(s => s.UserId == userId).ToListAsync(ct);
         }
-        public async Task<bool> IsShopAlreadyExist(Guid userId, string ozonClientId, CancellationToken ct)
+        public async Task<bool> IsShopAlreadyConnectedAsync(Guid userId, string ozonClientId, CancellationToken ct)
         {
             return await _db.Shops.AnyAsync(s => s.UserId == userId && s.OzonClientId == ozonClientId, ct);
         }

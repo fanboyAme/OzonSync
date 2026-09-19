@@ -1,7 +1,7 @@
 ﻿using OzonAnalytics.Application.ProjectDtos.ShopDtos.RequestDtos;
 using OzonAnalytics.Application.ProjectDtos.ShopDtos.ResponceDtos;
 
-namespace OzonAnalytics.Application.Interfaces.Shop
+namespace OzonAnalytics.Application.Interfaces.Shops
 {
     public interface IShopService
     {
