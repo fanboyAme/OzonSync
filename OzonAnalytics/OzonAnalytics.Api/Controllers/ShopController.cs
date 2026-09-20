@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using OzonAnalytics.Application.Interfaces.Shop;
+using OzonAnalytics.Application.Interfaces.Shops;
 
 namespace OzonAnalytics.Api.Controllers
 {
@@ -13,6 +13,8 @@ namespace OzonAnalytics.Api.Controllers
         {
             _shopService = shopService;
         }
-        
+        //1. connecting shop POST?
+        //2. get current shop by id GET
+        //3. get current list shop by userid GET
     }
 }

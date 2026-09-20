@@ -1,24 +1,81 @@
-﻿using OzonAnalytics.Application.Interfaces.Shop;
+﻿using OzonAnalytics.Application.Exceptions;
+using OzonAnalytics.Application.Interfaces.Auth;
+using OzonAnalytics.Application.Interfaces.Ozon;
+using OzonAnalytics.Application.Interfaces.Repositories;
+using OzonAnalytics.Application.Interfaces.Security;
+using OzonAnalytics.Application.Interfaces.Shops;
 using OzonAnalytics.Application.ProjectDtos.ShopDtos.RequestDtos;
 using OzonAnalytics.Application.ProjectDtos.ShopDtos.ResponceDtos;
-using System;
-using System.Collections.Generic;
-using System.Text;
+using OzonAnalytics.Domain.Entities;
 
 namespace OzonAnalytics.Application.Services.ShopService
 {
-    public class ShopService: IShopService
+    public class ShopService : IShopService
     {
-        //private
+        private readonly IOzonClient _client;
+        private readonly IShopRepository _shopRepository;
+        private readonly CancellationToken ct;
+        private readonly IEncryptionService _encryptionService;
+        private readonly IFindCurrentUser _findCurrentUser;
 
-        //public ShopService()
+        public ShopService(IOzonClient client, IShopRepository shopRepository, IEncryptionService encryptionService, IFindCurrentUser findCurrentUser)
+        {
+            _client = client;
+            _shopRepository = shopRepository;
+            _encryptionService = encryptionService;
+            _findCurrentUser = findCurrentUser;
+        }
 
-        public async Task<ShopDto> ConnectShopAsync(ConnectShopDto connectShopDto, Guid userId)
+        public async Task<ShopDto> ConnectShopAsync(ConnectShopDto connectShopDto, Guid userId, CancellationToken ct)
         {
             //проверяем подключен ли входной магаз уже к пользователю
+            var currentShop = await _shopRepository.GetByUserIdAndClientIdAsync(userId, connectShopDto.OzonClientId, ct);
+
+            if (currentShop is not null)
+            {
+                return new ShopDto
+                (
+                    currentShop!.Id,
+                    currentShop.Name,
+                    currentShop.Status,
+                    currentShop.LastSyncedAt
+                );
+            }
             // пробуем подключиться к озону с нашими данными ( ozonClient )
-            // если ок, то шифруем ключ, создаем магазиг(также даем статус и последнее подключение по вермени) и сохраняем через репу
-            // если нет, то бросаем ексепшн
+
+            var connectToOzon = await _client.ValidateCredentialsAsync(connectShopDto.OzonClientId, connectShopDto.OzonApiKey);
+
+            if (!connectToOzon.IsValid) throw new ValidationException("Неверные ключи Ozon или истекший срок их действия");
+
+            if (connectToOzon.ExpiresAt is null)
+            {
+                throw new ValidationException("Не удалось определить срок действия ключа");
+            }
+
+            var createdShop = new Shop
+                (
+                userId,
+                connectShopDto.OzonClientId,
+                _encryptionService.Protect(connectShopDto.OzonApiKey),
+                connectShopDto.ShopName,
+                connectToOzon.ExpiresAt.Value
+                );
+            await _shopRepository.AddAsync(createdShop, ct);
+
+            return new ShopDto(createdShop.Id, createdShop.Name, createdShop.Status, createdShop.LastSyncedAt);
+        }
+        public async Task<Shop?> GetCurrentShopById(Guid shopId, CancellationToken ct)
+        {
+            var currentShop = await _shopRepository.GetByIdAsync(shopId, ct);
+
+            if(currentShop is null) throw new NotFoundException("Магазин не найден");
+            if (currentShop.UserId != _findCurrentUser.FindCurrentUserId()) throw new ForbiddenException("Нет доступа к магазину");
+
+            return currentShop;
+        }
+        public async Task<List<Shop>?> GetAllShopsByUserId(CancellationToken ct)
+        {
+            return await _shopRepository.GetShopsByUserIdAsync(_findCurrentUser.FindCurrentUserId(), ct);
         }
     }
 }

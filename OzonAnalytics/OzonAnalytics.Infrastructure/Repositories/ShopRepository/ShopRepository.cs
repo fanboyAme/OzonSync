@@ -8,36 +8,27 @@ namespace OzonAnalytics.Infrastructure.Repositories.ShopRepository
     public class ShopRepository: IShopRepository
     {
         private readonly ApplicationDbContext _db;
+
         public ShopRepository(ApplicationDbContext db)
         {
             _db = db;
         }
-        public async Task<bool> AddAsync(Shop shop, Guid userId, CancellationToken ct)
+        public async Task AddAsync(Shop shop, CancellationToken ct)
         {
-            var newShop = new Shop
-            (
-                shop.UserId,
-                shop.OzonClientId,
-                shop.OzonApiKeyEncrypted,
-                shop.Name,
-                shop.OzonApiKeyExpiresAt
-            );
-
-            await _db.AddAsync(newShop, ct);
-            
-            return true;
+            await _db.AddAsync(shop, ct);
+            await _db.SaveChangesAsync(ct);
         }
         public async Task<Shop?> GetByIdAsync(Guid shopId, CancellationToken ct)
         {
             return await _db.Shops.SingleOrDefaultAsync(s => s.Id == shopId, ct);
         }
-        public async Task<List<Shop>?> GetShopByUserIdAsync(Guid userId, CancellationToken ct)
+        public async Task<List<Shop>?> GetShopsByUserIdAsync(Guid userId, CancellationToken ct)
         {
             return await _db.Shops.Where(s => s.UserId == userId).ToListAsync(ct);
         }
-        public async Task<bool> IsShopAlreadyConnectedAsync(Guid userId, string ozonClientId, CancellationToken ct)
+        public async Task<Shop?> GetByUserIdAndClientIdAsync(Guid userId, string OzonClientId, CancellationToken ct)
         {
-            return await _db.Shops.AnyAsync(s => s.UserId == userId && s.OzonClientId == ozonClientId, ct);
+            return await _db.Shops.SingleOrDefaultAsync(s => s.UserId == userId && s.OzonClientId == OzonClientId, ct);
         }
     }
 }

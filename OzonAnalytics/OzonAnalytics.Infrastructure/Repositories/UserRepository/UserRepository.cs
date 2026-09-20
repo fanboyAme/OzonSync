@@ -14,15 +14,10 @@ namespace OzonAnalytics.Infrastructure.Repositories.UserRepository
         {
             _db = db;
         }
-        public async Task<bool> AddAsync(RefreshToken refreshToken, CancellationToken ct)
+        public async Task AddAsync(RefreshToken refreshToken, CancellationToken ct)
         {
             await _db.RefreshTokens.AddAsync(refreshToken, ct);
-            return true;
-        }
-        public async Task<bool> SaveChangesAsync(CancellationToken ct)
-        {
             await _db.SaveChangesAsync(ct);
-            return true;
         }
     }
 }

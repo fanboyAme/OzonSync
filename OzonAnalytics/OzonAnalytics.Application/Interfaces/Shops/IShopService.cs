@@ -5,6 +5,6 @@ namespace OzonAnalytics.Application.Interfaces.Shops
 {
     public interface IShopService
     {
-        public Task<ShopDto> ConnectShopAsync(ConnectShopDto connectShopDto, Guid userId);
+        public Task<ShopDto> ConnectShopAsync(ConnectShopDto connectShopDto, Guid userId, CancellationToken ct);
     }
 }

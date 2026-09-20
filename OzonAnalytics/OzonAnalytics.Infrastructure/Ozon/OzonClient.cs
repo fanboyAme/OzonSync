@@ -37,10 +37,8 @@ namespace OzonAnalytics.Infrastructure.Ozon
 
             var hasOrderAccess = parse.Roles.Any(r => r.Methods.Any(m => m.Contains("/v1/posting")));
 
-            var isExpired = parse.ExpiresAt <= DateTime.UtcNow;
-
             return new OzonKeyValidationResult(
-                IsValid: hasOrderAccess && !isExpired,
+                IsValid: hasOrderAccess && !(parse.ExpiresAt <= DateTime.UtcNow),
                 ExpiresAt: parse.ExpiresAt
                 );
 

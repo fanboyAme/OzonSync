@@ -63,8 +63,6 @@ namespace OzonAnalytics.Application.Services.UserService
 
             await _userRepository.AddAsync(tokenEntity, ct);
 
-            await _userRepository.SaveChangesAsync(ct);
-
             _logger.LogInformation("Пользователь {UserId} успешно прошел авторизацию", currentUser.Id);
 
             return new AuthResponceDto

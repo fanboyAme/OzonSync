@@ -25,6 +25,7 @@ namespace OzonAnalytics.Infrastructure.Middleware
                 case UnauthorizedException: return StatusCodes.Status401Unauthorized;
                 case ConflictException: return StatusCodes.Status409Conflict;
                 case UserRegistrationException: return StatusCodes.Status500InternalServerError;
+                case ValidationException: return StatusCodes.Status400BadRequest;
                 default: return StatusCodes.Status500InternalServerError;
             }
 
