@@ -11,6 +11,7 @@ namespace OzonAnalytics.Domain.Entities
         public long OzonSku { get; set; }
         public string Name { get; set; }
         public string? Category { get; set; }
+        public Product() { }
         public Product(Guid shopId, long ozonSku, string name, string? category)
         {
             Id = Guid.NewGuid();

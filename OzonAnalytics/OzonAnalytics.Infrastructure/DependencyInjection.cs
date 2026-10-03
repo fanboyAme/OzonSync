@@ -5,11 +5,19 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using OzonAnalytics.Application.Interfaces.Auth;
+using OzonAnalytics.Application.Interfaces.Orders;
+using OzonAnalytics.Application.Interfaces.Ozon;
 using OzonAnalytics.Application.Interfaces.Repositories;
+using OzonAnalytics.Application.Interfaces.Shops;
+using OzonAnalytics.Application.Services.OrderService;
+using OzonAnalytics.Application.Services.ShopService;
 using OzonAnalytics.Application.Services.UserService;
 using OzonAnalytics.Domain.Entities;
 using OzonAnalytics.Infrastructure.Auth;
 using OzonAnalytics.Infrastructure.Database;
+using OzonAnalytics.Infrastructure.Ozon;
+using OzonAnalytics.Infrastructure.Repositories.OrderRepositrory;
+using OzonAnalytics.Infrastructure.Repositories.ShopRepository;
 using OzonAnalytics.Infrastructure.Repositories.UserRepository;
 using System.Text;
 
@@ -117,6 +125,12 @@ public static class DependencyInjection
     {
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IAuthService, AuthService>();
+        services.AddScoped<IShopService, ShopService>();
+        services.AddScoped<ISyncOrchestrationService, SyncOrchestrationService>();
+        services.AddScoped<IShopRepository, ShopRepository>();
+        services.AddScoped<IOrderRepository, OrderRepository>();
         services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
+        services.AddScoped<IFindCurrentUser, FindCurrentUser>();
+        services.AddScoped<IOzonClient, OzonClient>();
     }
 }

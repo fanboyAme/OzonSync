@@ -1,5 +1,4 @@
 ﻿using OzonAnalytics.Application.Exceptions;
-using OzonAnalytics.Application.Interfaces.Auth;
 using OzonAnalytics.Application.Interfaces.Ozon;
 using OzonAnalytics.Application.Interfaces.Repositories;
 using OzonAnalytics.Application.Interfaces.Security;
@@ -14,16 +13,13 @@ namespace OzonAnalytics.Application.Services.ShopService
     {
         private readonly IOzonClient _client;
         private readonly IShopRepository _shopRepository;
-        private readonly CancellationToken ct;
         private readonly IEncryptionService _encryptionService;
-        private readonly IFindCurrentUser _findCurrentUser;
 
-        public ShopService(IOzonClient client, IShopRepository shopRepository, IEncryptionService encryptionService, IFindCurrentUser findCurrentUser)
+        public ShopService(IOzonClient client, IShopRepository shopRepository, IEncryptionService encryptionService)
         {
             _client = client;
             _shopRepository = shopRepository;
             _encryptionService = encryptionService;
-            _findCurrentUser = findCurrentUser;
         }
 
         public async Task<ShopDto> ConnectShopAsync(ConnectShopDto connectShopDto, Guid userId, CancellationToken ct)
@@ -64,18 +60,18 @@ namespace OzonAnalytics.Application.Services.ShopService
 
             return new ShopDto(createdShop.Id, createdShop.Name, createdShop.Status, createdShop.LastSyncedAt);
         }
-        public async Task<Shop?> GetCurrentShopById(Guid shopId, CancellationToken ct)
+        public async Task<Shop?> GetCurrentShopById(Guid shopId, Guid userId, CancellationToken ct)
         {
             var currentShop = await _shopRepository.GetByIdAsync(shopId, ct);
 
             if(currentShop is null) throw new NotFoundException("Магазин не найден");
-            if (currentShop.UserId != _findCurrentUser.FindCurrentUserId()) throw new ForbiddenException("Нет доступа к магазину");
+            if (currentShop.UserId != userId) throw new ForbiddenException("Нет доступа к магазину");
 
             return currentShop;
         }
-        public async Task<List<Shop>?> GetAllShopsByUserId(CancellationToken ct)
+        public async Task<List<Shop>?> GetAllShopsByUserId(Guid userId, CancellationToken ct)
         {
-            return await _shopRepository.GetShopsByUserIdAsync(_findCurrentUser.FindCurrentUserId(), ct);
+            return await _shopRepository.GetShopsByUserIdAsync(userId, ct);
         }
     }
 }

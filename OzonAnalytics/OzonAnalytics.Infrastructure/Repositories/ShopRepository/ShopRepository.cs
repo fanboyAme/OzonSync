@@ -30,5 +30,10 @@ namespace OzonAnalytics.Infrastructure.Repositories.ShopRepository
         {
             return await _db.Shops.SingleOrDefaultAsync(s => s.UserId == userId && s.OzonClientId == OzonClientId, ct);
         }
+        public async Task UpdateShopAsync(Shop shop, CancellationToken ct)
+        {
+            _db.Shops.Update(shop);
+            await _db.SaveChangesAsync(ct);
+        }
     }
 }

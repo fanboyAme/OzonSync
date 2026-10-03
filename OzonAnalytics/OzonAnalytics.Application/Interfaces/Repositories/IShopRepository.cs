@@ -6,7 +6,8 @@ namespace OzonAnalytics.Application.Interfaces.Repositories
     {
         public Task AddAsync(Shop shop, CancellationToken ct);
         public Task<Shop?> GetByIdAsync(Guid shopId, CancellationToken ct);
-        public Task<List<Shop>?> GetShopByUserIdAsync(Guid userId, CancellationToken ct);
+        public Task<List<Shop>?> GetShopsByUserIdAsync(Guid userId, CancellationToken ct);
         public Task<Shop?> GetByUserIdAndClientIdAsync(Guid userId, string OzonClientId, CancellationToken ct);
+        public Task UpdateShopAsync(Shop shop, CancellationToken ct);
     }
 }

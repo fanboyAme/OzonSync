@@ -33,7 +33,7 @@ namespace OzonAnalytics.Application.Services.UserService
                     );
                 throw new ConflictException("Почта уже занята"); 
             }
-            var user = new ApplicationUser { UserName = userRegistrationDto.Email, Email = userRegistrationDto.Email};
+            var user = new ApplicationUser { UserName = userRegistrationDto.Name, Email = userRegistrationDto.Email};
             var result = await _userManager.CreateAsync(user, userRegistrationDto.Password);
             if(!result.Succeeded)
             {
