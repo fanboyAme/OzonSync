@@ -12,9 +12,11 @@ namespace OzonAnalytics.Domain.Entities
         public int Quantity { get; set; }
         public decimal Price { get; set; }
         public decimal CommisionAmount { get; set; }
-        public decimal LogisticsAmount { get; set; }
+        public decimal? LogisticsAmount { get; set; }
+        public decimal Payout {  get; set; }
+        public OrderItem() { }
 
-        public OrderItem(Guid orderId, Guid productId, int quantity, decimal price, decimal commisionAmount, decimal logisticsAmount)
+        public OrderItem(Guid orderId, Guid productId, int quantity, decimal price, decimal commisionAmount, decimal logisticsAmount, decimal payout)
         {
             Id = Guid.NewGuid();
             OrderId = orderId;
@@ -23,6 +25,7 @@ namespace OzonAnalytics.Domain.Entities
             Price = price;
             CommisionAmount = commisionAmount;
             LogisticsAmount = logisticsAmount;
+            Payout = payout;
         }
     }
 }
