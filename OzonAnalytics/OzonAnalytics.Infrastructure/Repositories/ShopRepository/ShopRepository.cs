@@ -35,5 +35,9 @@ namespace OzonAnalytics.Infrastructure.Repositories.ShopRepository
             _db.Shops.Update(shop);
             await _db.SaveChangesAsync(ct);
         }
+        public void ClearTracker()
+        {
+            _db.ChangeTracker.Clear();
+        }
     }
 }

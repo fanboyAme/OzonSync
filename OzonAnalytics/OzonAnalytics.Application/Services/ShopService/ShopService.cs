@@ -39,7 +39,7 @@ namespace OzonAnalytics.Application.Services.ShopService
             }
             // пробуем подключиться к озону с нашими данными ( ozonClient )
 
-            var connectToOzon = await _client.ValidateCredentialsAsync(connectShopDto.OzonClientId, connectShopDto.OzonApiKey);
+            var connectToOzon = await _client.ValidateCredentialsAsync(connectShopDto.OzonClientId, connectShopDto.OzonApiKey, ct);
 
             if (!connectToOzon.IsValid) throw new ValidationException("Неверные ключи Ozon или истекший срок их действия");
 

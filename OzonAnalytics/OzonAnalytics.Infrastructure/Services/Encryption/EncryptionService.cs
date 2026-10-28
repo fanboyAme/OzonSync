@@ -1,7 +1,4 @@
 ﻿using Microsoft.AspNetCore.DataProtection;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace OzonAnalytics.Infrastructure.Services.EncryptedService
 {
@@ -14,7 +11,7 @@ namespace OzonAnalytics.Infrastructure.Services.EncryptedService
             _dataProtector = provider.CreateProtector("OzonApiKeyProtection");
         }
         public string Protect(string key) => _dataProtector.Protect(key);
-        
+
         public string Unprotect(string protectKey) => _dataProtector.Unprotect(protectKey);
 
     }

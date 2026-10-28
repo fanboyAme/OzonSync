@@ -5,5 +5,5 @@ using System.Text;
 
 namespace OzonAnalytics.Application.ProjectDtos.ShopDtos.ResponceDtos
 {
-    public record class ShopDto(Guid Id, string Name, ShopStatus Status, DateTime LastSyncedAt);
+    public record class ShopDto(Guid Id, string Name, ShopStatus Status, DateTime? LastSyncedAt);
 }

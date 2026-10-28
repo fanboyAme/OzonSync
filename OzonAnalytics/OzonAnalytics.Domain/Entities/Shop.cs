@@ -12,7 +12,7 @@ namespace OzonAnalytics.Domain.Entities
         public bool OzonApiKeyIsExpired { get; set; }
         public string Name { get; set; }
         public ShopStatus Status { get; set; }
-        public DateTime LastSyncedAt { get; private set; }
+        public DateTime? LastSyncedAt { get; private set; }
         public bool IsActive { get; private set; } = true;
 
         public Shop(Guid userId, string ozonClientId, string ozonApiKeyEncrypted, string name, DateTime ozonApiKeyExpiresAt)

@@ -1,7 +1,4 @@
 ﻿using OzonAnalytics.Domain.Entities;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace OzonAnalytics.Application.Interfaces.Auth
 {

@@ -8,5 +8,6 @@ namespace OzonAnalytics.Application.Interfaces.Repositories
     public interface ISyncLogRepository
     {
         public Task AddAsync(SyncLog syncLog, CancellationToken ct);
+        public Task UpdateAsync(SyncLog syncLog, CancellationToken ct);
     }
 }

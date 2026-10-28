@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Logging;
-using OzonAnalytics.Application.Exceptions;
+﻿using OzonAnalytics.Application.Exceptions;
 using System.Text.Json;
 
 namespace OzonAnalytics.Infrastructure.Middleware
@@ -26,6 +24,8 @@ namespace OzonAnalytics.Infrastructure.Middleware
                 case ConflictException: return StatusCodes.Status409Conflict;
                 case UserRegistrationException: return StatusCodes.Status500InternalServerError;
                 case ValidationException: return StatusCodes.Status400BadRequest;
+                case TooManyRequestsException: return StatusCodes.Status429TooManyRequests;
+                case OzonApiException: return StatusCodes.Status502BadGateway;
                 default: return StatusCodes.Status500InternalServerError;
             }
 

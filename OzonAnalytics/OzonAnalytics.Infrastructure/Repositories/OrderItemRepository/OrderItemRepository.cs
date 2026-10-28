@@ -4,7 +4,7 @@ using OzonAnalytics.Infrastructure.Database;
 
 namespace OzonAnalytics.Infrastructure.Repositories.OrderItemRepository
 {
-    public class OrderItemRepository: IOrderItemRepository
+    public class OrderItemRepository : IOrderItemRepository
     {
         private readonly ApplicationDbContext _db;
         public OrderItemRepository(ApplicationDbContext db)

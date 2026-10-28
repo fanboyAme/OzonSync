@@ -4,22 +4,19 @@ using OzonAnalytics.Application.ProjectDtos.ShopDtos.ResponceDtos;
 using OzonAnalytics.Infrastructure.Ozon.Models;
 using OzonAnalytics.Infrastructure.Ozon.Models.Request;
 using OzonAnalytics.Infrastructure.Ozon.Models.Response;
-using System;
-using System.Collections.Generic;
 using System.Net.Http.Json;
-using System.Text;
 using System.Text.Json;
 
 namespace OzonAnalytics.Infrastructure.Ozon
 {
-    public class OzonClient: IOzonClient
+    public class OzonClient : IOzonClient
     {
         private readonly HttpClient _httpClient;
         private static readonly JsonSerializerOptions _jsonSerializerOptions = new JsonSerializerOptions()
         {
             PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower
         };
-        public OzonClient (HttpClient httpClient)
+        public OzonClient(HttpClient httpClient)
         {
             _httpClient = httpClient;
         }
@@ -31,16 +28,16 @@ namespace OzonAnalytics.Infrastructure.Ozon
 
             try
             {
-            var parse = await SendAndParseAsync<OzonRolesResponse>(request, ct);
+                var parse = await SendAndParseAsync<OzonRolesResponse>(request, ct);
 
-            var hasOrderAccess = parse!.Roles.Any(r => r.Methods.Any(m => m.Contains("/v1/posting")));
+                var hasOrderAccess = parse!.Roles.Any(r => r.Methods.Any(m => m.Contains("/v1/posting")));
 
-            return new OzonKeyValidationResult(
-              IsValid: hasOrderAccess && !(parse.ExpiresAt <= DateTime.UtcNow),
-              ExpiresAt: parse.ExpiresAt
-              );
+                return new OzonKeyValidationResult(
+                  IsValid: hasOrderAccess && !(parse.ExpiresAt <= DateTime.UtcNow),
+                  ExpiresAt: parse.ExpiresAt
+                  );
             }
-            catch(Exception ex) when(ex is UnauthorizedException or NotFoundException)  
+            catch (Exception ex) when (ex is UnauthorizedException or NotFoundException)
             {
                 return new OzonKeyValidationResult(false, null);
             }
@@ -50,10 +47,10 @@ namespace OzonAnalytics.Infrastructure.Ozon
             var requestBody = new OzonPostingsRequest
             {
                 Dir = "asc",
-                Filter = new OzonPostingsFilter { Since = since, To = to  },
+                Filter = new OzonPostingsFilter { Since = since, To = to },
                 Limit = limit,
                 Cursor = cursor ?? "",
-                With = new OzonPostingsWith { FinancialData = true  },
+                With = new OzonPostingsWith { FinancialData = true },
             };
             var request = new HttpRequestMessage(HttpMethod.Post, "https://api-seller.ozon.ru/v4/posting/fbs/list");
 
@@ -98,11 +95,21 @@ namespace OzonAnalytics.Infrastructure.Ozon
         {
             var response = await _httpClient.SendAsync(request, ct);
 
-            if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized) throw new UnauthorizedException("Неверные ключи Озон");
+            switch (response.StatusCode)
+            {
+                case System.Net.HttpStatusCode.Unauthorized: throw new OzonApiException(401, "Неверные ключи Озон");
+                case System.Net.HttpStatusCode.Forbidden: throw new OzonApiException(403, "Нет доступа");
+                case System.Net.HttpStatusCode.TooManyRequests: throw new OzonApiException(429, "Слишком много запросов");
+            }
+
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new OzonApiException((int)response.StatusCode, "Ошибка OzonApi");
+            }
 
             var jsonString = await response.Content.ReadAsStringAsync(ct);
 
-            var parse = JsonSerializer.Deserialize<T>(jsonString, _jsonSerializerOptions) ?? 
+            var parse = JsonSerializer.Deserialize<T>(jsonString, _jsonSerializerOptions) ??
                 throw new NotFoundException("Не удалось распарсить ответ от Озон");
 
             return parse;

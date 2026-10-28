@@ -9,6 +9,7 @@ using OzonAnalytics.Application.Interfaces.Orders;
 using OzonAnalytics.Application.Interfaces.Ozon;
 using OzonAnalytics.Application.Interfaces.Repositories;
 using OzonAnalytics.Application.Interfaces.Shops;
+using OzonAnalytics.Application.Interfaces.Transaction;
 using OzonAnalytics.Application.Services.OrderService;
 using OzonAnalytics.Application.Services.ShopService;
 using OzonAnalytics.Application.Services.UserService;
@@ -132,5 +133,6 @@ public static class DependencyInjection
         services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
         services.AddScoped<IFindCurrentUser, FindCurrentUser>();
         services.AddScoped<IOzonClient, OzonClient>();
+        services.AddScoped<ITransactionManager, TransactionManager>();
     }
 }
