@@ -1,9 +1,10 @@
 ﻿using Microsoft.AspNetCore.DataProtection;
+using OzonAnalytics.Application.Interfaces.Security;
 
 namespace OzonAnalytics.Infrastructure.Services.EncryptedService
 {
 
-    public class EncryptionService
+    public class EncryptionService : IEncryptionService
     {
         private readonly IDataProtector _dataProtector;
         public EncryptionService(IDataProtectionProvider provider)

@@ -5,14 +5,14 @@ using OzonAnalytics.Infrastructure.Database;
 
 namespace OzonAnalytics.Infrastructure.Repositories.OrderRepositrory
 {
-    public class OrderRepository: IOrderRepository
+    public class OrderRepository : IOrderRepository
     {
         private readonly ApplicationDbContext _db;
         public OrderRepository(ApplicationDbContext db)
         {
             _db = db;
         }
-        public async Task<List<Order>?> GetOrdersByShopId(Guid shopId, CancellationToken ct)
+        public async Task<List<Order>> GetOrdersByShopId(Guid shopId, CancellationToken ct)
         {
             return await _db.Orders.Where(o => o.ShopId == shopId).ToListAsync(ct);
         }

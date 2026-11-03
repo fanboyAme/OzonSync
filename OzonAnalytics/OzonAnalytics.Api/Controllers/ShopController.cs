@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Mvc;
 using OzonAnalytics.Application.Interfaces.Auth;
 using OzonAnalytics.Application.Interfaces.Shops;
 using OzonAnalytics.Application.ProjectDtos.ShopDtos.RequestDtos;
-using OzonAnalytics.Domain.Entities;
 
 namespace OzonAnalytics.Api.Controllers
 {
@@ -18,7 +17,7 @@ namespace OzonAnalytics.Api.Controllers
         {
             _shopService = shopService;
             _findCurrentUser = findCurrentUser;
-            
+
         }
         [HttpPost("connect")]
         [Authorize]
@@ -41,6 +40,6 @@ namespace OzonAnalytics.Api.Controllers
             var result = await _shopService.GetAllShopsByUserId(_findCurrentUser.FindCurrentUserId(), ct);
             return Ok(result);
         }
-        
+
     }
 }

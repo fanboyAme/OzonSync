@@ -54,7 +54,7 @@ namespace OzonAnalytics.Application.Services.ShopService
                 connectShopDto.OzonClientId,
                 _encryptionService.Protect(connectShopDto.OzonApiKey),
                 connectShopDto.ShopName,
-                connectToOzon.ExpiresAt.Value
+                connectToOzon.ExpiresAt.Value.ToUniversalTime()
                 );
             await _shopRepository.AddAsync(createdShop, ct);
 
@@ -64,7 +64,7 @@ namespace OzonAnalytics.Application.Services.ShopService
         {
             var currentShop = await _shopRepository.GetByIdAsync(shopId, ct);
 
-            if(currentShop is null) throw new NotFoundException("Магазин не найден");
+            if (currentShop is null) throw new NotFoundException("Магазин не найден");
             if (currentShop.UserId != userId) throw new ForbiddenException("Нет доступа к магазину");
 
             return currentShop;

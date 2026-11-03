@@ -1,7 +1,4 @@
 ﻿using OzonAnalytics.Domain.Entities;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace OzonAnalytics.Application.Interfaces.Repositories
 {
@@ -9,5 +6,6 @@ namespace OzonAnalytics.Application.Interfaces.Repositories
     {
         public Task AddAsync(SyncLog syncLog, CancellationToken ct);
         public Task UpdateAsync(SyncLog syncLog, CancellationToken ct);
+        public Task<List<SyncLog>> GetLogsByShopIdAsync(Guid shopId, int? limit, CancellationToken ct);
     }
 }

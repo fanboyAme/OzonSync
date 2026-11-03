@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -8,18 +7,25 @@ using OzonAnalytics.Application.Interfaces.Auth;
 using OzonAnalytics.Application.Interfaces.Orders;
 using OzonAnalytics.Application.Interfaces.Ozon;
 using OzonAnalytics.Application.Interfaces.Repositories;
+using OzonAnalytics.Application.Interfaces.Security;
 using OzonAnalytics.Application.Interfaces.Shops;
 using OzonAnalytics.Application.Interfaces.Transaction;
-using OzonAnalytics.Application.Services.OrderService;
 using OzonAnalytics.Application.Services.ShopService;
+using OzonAnalytics.Application.Services.Sync;
 using OzonAnalytics.Application.Services.UserService;
 using OzonAnalytics.Domain.Entities;
 using OzonAnalytics.Infrastructure.Auth;
 using OzonAnalytics.Infrastructure.Database;
 using OzonAnalytics.Infrastructure.Ozon;
+using OzonAnalytics.Infrastructure.Ozon.Fake;
+using OzonAnalytics.Infrastructure.Repositories;
+using OzonAnalytics.Infrastructure.Repositories.OrderItemRepository;
 using OzonAnalytics.Infrastructure.Repositories.OrderRepositrory;
+using OzonAnalytics.Infrastructure.Repositories.ProductRepository;
 using OzonAnalytics.Infrastructure.Repositories.ShopRepository;
 using OzonAnalytics.Infrastructure.Repositories.UserRepository;
+using OzonAnalytics.Infrastructure.Services.EncryptedService;
+using OzonAnalytics.Infrastructure.Transaction;
 using System.Text;
 
 namespace OzonAnalytics.Infrastructure;
@@ -33,7 +39,7 @@ public static class DependencyInjection
         AddDatabase(services, configuration);
         AddIdentity(services);
         AddAuthentication(services, configuration);
-        AddRepositories(services);
+        AddRepositories(services, configuration);
 
         return services;
     }
@@ -122,17 +128,36 @@ public static class DependencyInjection
     }
 
     private static void AddRepositories(
-        IServiceCollection services)
+        IServiceCollection services,
+        IConfiguration configuration)
     {
+        var FakeOzon = configuration.GetValue<bool>("Ozon:UseFake");
+
         services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<IShopRepository, ShopRepository>();
+        services.AddScoped<IOrderRepository, OrderRepository>();
+        services.AddScoped<IOrderItemRepository, OrderItemRepository>();
+        services.AddScoped<ISyncLogRepository, SyncLogRepository>();
+        services.AddScoped<IProductRepository, ProductRepository>();
+
+
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IShopService, ShopService>();
         services.AddScoped<ISyncOrchestrationService, SyncOrchestrationService>();
-        services.AddScoped<IShopRepository, ShopRepository>();
-        services.AddScoped<IOrderRepository, OrderRepository>();
+
         services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
+        services.AddHttpContextAccessor();
         services.AddScoped<IFindCurrentUser, FindCurrentUser>();
-        services.AddScoped<IOzonClient, OzonClient>();
+        if (FakeOzon)
+        {
+            services.AddScoped<IOzonClient, FakeOzonClient>();
+        }
+        else
+        {
+            services.AddHttpClient<IOzonClient, OzonClient>();
+        }
         services.AddScoped<ITransactionManager, TransactionManager>();
+        services.AddScoped<IEncryptionService, EncryptionService>();
+        services.AddDataProtection();
     }
 }

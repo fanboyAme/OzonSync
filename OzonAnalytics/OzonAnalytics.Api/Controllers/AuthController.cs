@@ -6,7 +6,7 @@ namespace OzonAnalytics.Api.Controllers
 {
     [ApiController]
     [Route("api/v1/auth")]
-    public class AuthController: ControllerBase
+    public class AuthController : ControllerBase
     {
         private readonly IAuthService _authService;
 

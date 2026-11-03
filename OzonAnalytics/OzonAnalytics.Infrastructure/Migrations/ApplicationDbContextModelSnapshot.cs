@@ -93,14 +93,20 @@ namespace OzonAnalytics.Infrastructure.Migrations
                     b.Property<DateTime>("InProccesAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<long>("OzonOrderId")
-                        .HasColumnType("bigint");
+                    b.Property<string>("OzonOrderId")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<Guid>("ShopId")
                         .HasColumnType("uuid");
 
-                    b.Property<int>("Status")
-                        .HasColumnType("integer");
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Substatus")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
@@ -119,11 +125,14 @@ namespace OzonAnalytics.Infrastructure.Migrations
                     b.Property<decimal>("CommisionAmount")
                         .HasColumnType("numeric");
 
-                    b.Property<decimal>("LogisticsAmount")
+                    b.Property<decimal?>("LogisticsAmount")
                         .HasColumnType("numeric");
 
                     b.Property<Guid>("OrderId")
                         .HasColumnType("uuid");
+
+                    b.Property<decimal>("Payout")
+                        .HasColumnType("numeric");
 
                     b.Property<decimal>("Price")
                         .HasColumnType("numeric");
@@ -207,7 +216,7 @@ namespace OzonAnalytics.Infrastructure.Migrations
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
 
-                    b.Property<DateTime>("LastSyncedAt")
+                    b.Property<DateTime?>("LastSyncedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Name")
@@ -217,6 +226,12 @@ namespace OzonAnalytics.Infrastructure.Migrations
                     b.Property<string>("OzonApiKeyEncrypted")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<DateTime>("OzonApiKeyExpiresAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("OzonApiKeyIsExpired")
+                        .HasColumnType("boolean");
 
                     b.Property<string>("OzonClientId")
                         .IsRequired()
@@ -243,10 +258,9 @@ namespace OzonAnalytics.Infrastructure.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<string>("ErrorMessage")
-                        .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<DateTime>("FinishedAt")
+                    b.Property<DateTime?>("FinishedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<int>("OrdersSynced")
@@ -264,6 +278,8 @@ namespace OzonAnalytics.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("ShopId");
+
+                    b.HasIndex("ShopId", "StartedAt");
 
                     b.ToTable("SyncLogs");
                 });

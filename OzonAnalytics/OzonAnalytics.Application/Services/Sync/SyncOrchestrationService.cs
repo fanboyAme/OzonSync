@@ -5,9 +5,10 @@ using OzonAnalytics.Application.Interfaces.Ozon;
 using OzonAnalytics.Application.Interfaces.Repositories;
 using OzonAnalytics.Application.Interfaces.Security;
 using OzonAnalytics.Application.Interfaces.Transaction;
+using OzonAnalytics.Application.ProjectDtos.SyncDTO;
 using OzonAnalytics.Domain.Entities;
 
-namespace OzonAnalytics.Application.Services.OrderService
+namespace OzonAnalytics.Application.Services.Sync
 {
     public class SyncOrchestrationService : ISyncOrchestrationService
     {
@@ -40,20 +41,22 @@ namespace OzonAnalytics.Application.Services.OrderService
         public async Task SyncShopAsync(Guid shopId, Guid userId, DateTime? since, int? limit, CancellationToken ct)
         {
             var now = DateTime.UtcNow;
-
-            var startedAt = now;
             var currentShop = await _shopRepository.GetByIdAsync(shopId, ct) ??
                 throw new NotFoundException("Магазин не найден");
             if (currentShop.UserId != userId) throw new ForbiddenException("Доступ отказан");
+            if (currentShop.Status == Domain.Enums.ShopStatus.Syncing) throw new ConflictException("Магазин уже синхронизируется");
 
-            currentShop.MarkSyncing();
-            await _shopRepository.UpdateShopAsync(currentShop, ct);
-            var syncLog = new SyncLog(shopId, now);
-            syncLog.InProcess();
-            await _syncLogRepository.AddAsync(syncLog, ct);
+            SyncLog? syncLog = null;
 
             try
             {
+
+                currentShop.MarkSyncing();
+                await _shopRepository.UpdateShopAsync(currentShop, ct);
+                syncLog = new SyncLog(shopId, now);
+                syncLog.InProcess();
+                await _syncLogRepository.AddAsync(syncLog, ct);
+
                 var apiKey = _encryptionService.Unprotect(currentShop.OzonApiKeyEncrypted);
                 if (string.IsNullOrWhiteSpace(apiKey)) throw new InvalidOperationException("Не удалось расшифровать ключ магазина");
                 var clientId = currentShop.OzonClientId;
@@ -64,10 +67,10 @@ namespace OzonAnalytics.Application.Services.OrderService
                 var currentLimit = limit ?? 50;
                 var totalOrdersSynced = 0;
 
-                var currentOrders = await _orderRepository.GetOrdersByShopId(shopId, ct) ?? new List<Order>();
+                var currentOrders = await _orderRepository.GetOrdersByShopId(shopId, ct);
                 var existringOrdersDict = currentOrders.ToDictionary(co => co.OzonOrderId);
 
-                var currentProducts = await _productRepository.GetProductByShopId(shopId, ct) ?? new List<Product>();
+                var currentProducts = await _productRepository.GetProductByShopId(shopId, ct);
                 var processedProduct = currentProducts.ToDictionary(cp => cp.OzonSku);
                 while (true)
                 {
@@ -133,7 +136,7 @@ namespace OzonAnalytics.Application.Services.OrderService
                                 ozonItem.Quantity,
                                 ozonItem.Price,
                                 ozonItem.CommissionAmount,
-                                (ozonItem?.Payout ?? 0) - (ozonItem?.Price ?? 0) - (ozonItem?.CommissionAmount ?? 0),
+                                null,
                                 ozonItem.Payout
                             );
                             newOrderItem.Add(orderItem);
@@ -177,8 +180,11 @@ namespace OzonAnalytics.Application.Services.OrderService
                     _shopRepository.ClearTracker();
                     currentShop.MarkError();
                     await _shopRepository.UpdateShopAsync(currentShop, CancellationToken.None);
-                    syncLog.Failes(ex.Message);
-                    await _syncLogRepository.UpdateAsync(syncLog, CancellationToken.None);
+                    if (syncLog != null)
+                    {
+                        syncLog.Fail(ex.Message);
+                        await _syncLogRepository.UpdateAsync(syncLog, CancellationToken.None);
+                    }
                 }
                 catch (Exception exc)
                 {
@@ -187,6 +193,25 @@ namespace OzonAnalytics.Application.Services.OrderService
 
                 throw;
             }
+        }
+        public async Task<List<SyncLogDto>> GetLogsAsync(Guid shopId, int? limit, Guid userId, CancellationToken ct)
+        {
+            var currentShop = await _shopRepository.GetByIdAsync(shopId, ct) ?? throw new NotFoundException("Магазин с таким Id не найден");
+
+            if (currentShop.UserId != userId) throw new ForbiddenException("Отказано в доступе");
+
+            var currentLog = await _syncLogRepository.GetLogsByShopIdAsync(shopId, limit, ct);
+
+            return currentLog.Select(sl => new SyncLogDto
+            (
+                sl.Id,
+                shopId,
+                sl.StartedAt,
+                sl.FinishedAt,
+                sl.Status,
+                sl.OrdersSynced,
+                sl.ErrorMessage
+            )).ToList();
         }
     }
 }

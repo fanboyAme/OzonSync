@@ -37,7 +37,7 @@ namespace OzonAnalytics.Infrastructure.Ozon
                   ExpiresAt: parse.ExpiresAt
                   );
             }
-            catch (Exception ex) when (ex is UnauthorizedException or NotFoundException)
+            catch (OzonApiException ex) when (ex.StatusCode is 401 or 403 or 404)
             {
                 return new OzonKeyValidationResult(false, null);
             }

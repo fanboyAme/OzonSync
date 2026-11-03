@@ -1,4 +1,5 @@
-﻿using OzonAnalytics.Application.Interfaces.Repositories;
+﻿using Microsoft.EntityFrameworkCore;
+using OzonAnalytics.Application.Interfaces.Repositories;
 using OzonAnalytics.Domain.Entities;
 using OzonAnalytics.Infrastructure.Database;
 
@@ -21,6 +22,11 @@ namespace OzonAnalytics.Infrastructure.Repositories
         {
             _db.SyncLogs.Update(syncLog);
             await _db.SaveChangesAsync(ct);
+        }
+        public async Task<List<SyncLog>> GetLogsByShopIdAsync(Guid shopId, int? limit, CancellationToken ct)
+        {
+            var take = Math.Clamp(limit ?? 10, 1, 50);
+            return await _db.SyncLogs.Where(sl => sl.ShopId == shopId).OrderByDescending(sl => sl.StartedAt).Take(take).ToListAsync(ct);
         }
     }
 }

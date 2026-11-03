@@ -70,6 +70,9 @@ namespace OzonAnalytics.Infrastructure.Database
             modelBuilder.Entity<SyncLog>()
                 .HasIndex(sl => sl.ShopId);
 
+            modelBuilder.Entity<SyncLog>()
+                .HasIndex(sl => new { sl.ShopId, sl.StartedAt });
+
             modelBuilder.Entity<Product>()
               .HasOne<Shop>()
               .WithMany()
