@@ -22,15 +22,15 @@ namespace OzonAnalytics.Api.Controllers
         [HttpPost("sync")]
         // Добавить 202, так как синхронизация может быть долгой, а обычный ct отменит с флагом Failed.
         // Для этого тут нужно будет оставить обычный 202, и отдать задачу воркеру, который будет ее выполнять (саму синхронизацию).
-        public async Task<IActionResult> Sync(Guid shopId, DateTime? since, int? limit, CancellationToken ct)
+        public async Task<IActionResult> Sync(SyncDto syncDto, CancellationToken ct)
         {
-            await _syncOrchestrationService.SyncShopAsync(shopId, _findCurrentUser.FindCurrentUserId(), since, limit, ct);
+            await _syncOrchestrationService.SyncShopAsync(syncDto.shopId, _findCurrentUser.FindCurrentUserId(), syncDto.since, syncDto.limit, ct);
             return Ok();
         }
         [HttpGet("logs")]
-        public async Task<ActionResult<List<SyncLogDto>>> GetLogs(Guid shopId, int? limit, CancellationToken ct)
+        public async Task<ActionResult<List<SyncLogDto>>> GetLogs(GetLogsDto getLogsDto, CancellationToken ct)
         {
-            var logs = await _syncOrchestrationService.GetLogsAsync(shopId, limit, _findCurrentUser.FindCurrentUserId(), ct);
+            var logs = await _syncOrchestrationService.GetLogsAsync(getLogsDto.shopId, getLogsDto.limit, _findCurrentUser.FindCurrentUserId(), ct);
             return Ok(logs);
         }
     }

@@ -45,7 +45,7 @@ namespace OzonAnalytics.Application.Services.UserService
             _logger.LogInformation("Пользователь {UserId} успешно создан", user.Id);
             return user.Email;
         }
-        public async Task<AuthResponceDto> AuthorizationAsync(UserAuthDto userAuthDto, CancellationToken ct)
+        public async Task<AuthResponseDto> AuthorizationAsync(UserAuthDto userAuthDto, CancellationToken ct)
         {
             var currentUser = await _userManager.FindByEmailAsync(userAuthDto.email);
             if (currentUser is null || !await _userManager.CheckPasswordAsync(currentUser, userAuthDto.password))
@@ -65,7 +65,7 @@ namespace OzonAnalytics.Application.Services.UserService
 
             _logger.LogInformation("Пользователь {UserId} успешно прошел авторизацию", currentUser.Id);
 
-            return new AuthResponceDto
+            return new AuthResponseDto
             {
                 AccessToken = accessToken,
                 RefreshToken = refreshToken

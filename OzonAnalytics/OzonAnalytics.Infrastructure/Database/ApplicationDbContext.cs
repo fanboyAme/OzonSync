@@ -31,6 +31,8 @@ namespace OzonAnalytics.Infrastructure.Database
             modelBuilder.Entity<Order>()
                 .HasIndex(o => new { o.ShopId, o.OzonOrderId })
                 .IsUnique();
+            modelBuilder.Entity<Order>()
+                .HasIndex(o => new { o.ShopId, o.InProcessAt });
 
             modelBuilder.Entity<RefreshToken>()
                 .HasOne<ApplicationUser>()

@@ -5,7 +5,7 @@ using OzonAnalytics.Infrastructure.Database;
 
 namespace OzonAnalytics.Infrastructure.Repositories.ShopRepository
 {
-    public class ShopRepository: IShopRepository
+    public class ShopRepository : IShopRepository
     {
         private readonly ApplicationDbContext _db;
 

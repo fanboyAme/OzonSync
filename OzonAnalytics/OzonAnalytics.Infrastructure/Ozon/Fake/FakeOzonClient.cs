@@ -1,5 +1,4 @@
-﻿using OzonAnalytics.Application.Exceptions;
-using OzonAnalytics.Application.Interfaces.Ozon;
+﻿using OzonAnalytics.Application.Interfaces.Ozon;
 using OzonAnalytics.Application.ProjectDtos.ShopDtos.ResponceDtos;
 using OzonAnalytics.Infrastructure.Ozon.Models;
 
@@ -91,7 +90,6 @@ namespace OzonAnalytics.Infrastructure.Ozon.Fake
             var filterOrders = orders.Where(o => o.InProcessAt > since && o.InProcessAt < to).ToList();
 
             var start = CursorOrders(cursor);
-            if (start == 3) throw new OzonApiException(500, "Test");
 
             var takeOrders = filterOrders.Skip(start).Take(limit).ToList();
 

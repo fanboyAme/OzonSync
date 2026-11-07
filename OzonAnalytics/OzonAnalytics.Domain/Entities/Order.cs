@@ -1,6 +1,4 @@
-﻿using OzonAnalytics.Domain.Enums;
-
-namespace OzonAnalytics.Domain.Entities
+﻿namespace OzonAnalytics.Domain.Entities
 {
     public class Order
     {
@@ -10,7 +8,7 @@ namespace OzonAnalytics.Domain.Entities
         public string Status { get; set; } = default!;
         public string Substatus { get; set; } = default!;
         public DateTime CreatedAt { get; set; }
-        public DateTime InProccesAt { get; set; }
+        public DateTime InProcessAt { get; set; }
         public Order() { }
 
         public Order(Guid shopId, string ozonOrderId, string status, string substatus, DateTime createdAt, DateTime inProccesAt)
@@ -21,7 +19,7 @@ namespace OzonAnalytics.Domain.Entities
             Status = status;
             Substatus = substatus;
             CreatedAt = createdAt;
-            InProccesAt = inProccesAt;
+            InProcessAt = inProccesAt;
         }
 
     }

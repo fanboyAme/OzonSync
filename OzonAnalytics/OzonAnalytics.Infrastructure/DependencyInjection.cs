@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
+using OzonAnalytics.Application.Interfaces.Analytic;
 using OzonAnalytics.Application.Interfaces.Auth;
 using OzonAnalytics.Application.Interfaces.Orders;
 using OzonAnalytics.Application.Interfaces.Ozon;
@@ -10,6 +11,7 @@ using OzonAnalytics.Application.Interfaces.Repositories;
 using OzonAnalytics.Application.Interfaces.Security;
 using OzonAnalytics.Application.Interfaces.Shops;
 using OzonAnalytics.Application.Interfaces.Transaction;
+using OzonAnalytics.Application.Services.AnalyticService;
 using OzonAnalytics.Application.Services.ShopService;
 using OzonAnalytics.Application.Services.Sync;
 using OzonAnalytics.Application.Services.UserService;
@@ -19,6 +21,7 @@ using OzonAnalytics.Infrastructure.Database;
 using OzonAnalytics.Infrastructure.Ozon;
 using OzonAnalytics.Infrastructure.Ozon.Fake;
 using OzonAnalytics.Infrastructure.Repositories;
+using OzonAnalytics.Infrastructure.Repositories.AnalyticsRepository;
 using OzonAnalytics.Infrastructure.Repositories.OrderItemRepository;
 using OzonAnalytics.Infrastructure.Repositories.OrderRepositrory;
 using OzonAnalytics.Infrastructure.Repositories.ProductRepository;
@@ -139,11 +142,13 @@ public static class DependencyInjection
         services.AddScoped<IOrderItemRepository, OrderItemRepository>();
         services.AddScoped<ISyncLogRepository, SyncLogRepository>();
         services.AddScoped<IProductRepository, ProductRepository>();
+        services.AddScoped<IAnalyticsRepository, AnalyticsRepository>();
 
 
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IShopService, ShopService>();
         services.AddScoped<ISyncOrchestrationService, SyncOrchestrationService>();
+        services.AddScoped<IAnalyticsService, AnalyticsService>();
 
         services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
         services.AddHttpContextAccessor();

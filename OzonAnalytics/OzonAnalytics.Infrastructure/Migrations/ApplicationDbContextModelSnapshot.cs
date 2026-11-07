@@ -90,7 +90,7 @@ namespace OzonAnalytics.Infrastructure.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<DateTime>("InProccesAt")
+                    b.Property<DateTime>("InProcessAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("OzonOrderId")
@@ -110,6 +110,8 @@ namespace OzonAnalytics.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("ShopId", "InProcessAt");
+
                     b.HasIndex("ShopId", "OzonOrderId")
                         .IsUnique();
 
@@ -122,7 +124,7 @@ namespace OzonAnalytics.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<decimal>("CommisionAmount")
+                    b.Property<decimal>("CommissionAmount")
                         .HasColumnType("numeric");
 
                     b.Property<decimal?>("LogisticsAmount")

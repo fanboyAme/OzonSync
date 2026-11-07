@@ -7,7 +7,7 @@
         public Guid ProductId { get; set; }
         public int Quantity { get; set; }
         public decimal Price { get; set; }
-        public decimal CommisionAmount { get; set; }
+        public decimal CommissionAmount { get; set; }
         public decimal? LogisticsAmount { get; set; }
         public decimal Payout { get; set; }
         public OrderItem() { }
@@ -19,7 +19,7 @@
             ProductId = productId;
             Quantity = quantity;
             Price = price;
-            CommisionAmount = commisionAmount;
+            CommissionAmount = commisionAmount;
             LogisticsAmount = logisticsAmount;
             Payout = payout;
         }
