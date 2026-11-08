@@ -24,6 +24,12 @@ namespace OzonAnalytics.Api.Controllers
             var financialData = await _analyticsService.GetSummaryAsync(shopId, _findCurrentUser.FindCurrentUserId(), from, to, ct);
             return Ok(financialData);
         }
+        [HttpGet("compare")]
+        public async Task<IActionResult> Compare(DateTime from, DateTime to, Guid shopId, CancellationToken ct)
+        {
+            var CompareData = await _analyticsService.CompareAsync(shopId, _findCurrentUser.FindCurrentUserId(), from, to, ct);
+            return Ok(CompareData);
+        }
 
     }
 }
