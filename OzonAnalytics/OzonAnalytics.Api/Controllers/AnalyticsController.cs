@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using OzonAnalytics.Application.Interfaces.Analytic;
 using OzonAnalytics.Application.Interfaces.Auth;
+using OzonAnalytics.Domain.Enums;
 
 namespace OzonAnalytics.Api.Controllers
 {
@@ -27,8 +28,14 @@ namespace OzonAnalytics.Api.Controllers
         [HttpGet("compare")]
         public async Task<IActionResult> Compare(DateTime from, DateTime to, Guid shopId, CancellationToken ct)
         {
-            var CompareData = await _analyticsService.CompareAsync(shopId, _findCurrentUser.FindCurrentUserId(), from, to, ct);
-            return Ok(CompareData);
+            var compareData = await _analyticsService.CompareAsync(shopId, _findCurrentUser.FindCurrentUserId(), from, to, ct);
+            return Ok(compareData);
+        }
+        [HttpGet("top-product")]
+        public async Task<IActionResult> TopProduct(DateTime from, DateTime to, Guid shopId, int? limit, TopProductSortBy sortBy, CancellationToken ct)
+        {
+            var topProductList = await _analyticsService.TopProductAsync(shopId, _findCurrentUser.FindCurrentUserId(), from, to, limit, sortBy, ct);
+            return Ok(topProductList);
         }
 
     }

@@ -2,6 +2,7 @@
 using OzonAnalytics.Application.Interfaces.Repositories;
 using OzonAnalytics.Application.ProjectDtos.ResponseDto.AnalyticsResponseDto;
 using OzonAnalytics.Domain.Entities;
+using OzonAnalytics.Domain.Enums;
 using OzonAnalytics.Infrastructure.Database;
 
 namespace OzonAnalytics.Infrastructure.Repositories.AnalyticsRepository
@@ -55,6 +56,38 @@ namespace OzonAnalytics.Infrastructure.Repositories.AnalyticsRepository
                 AverageCheck: averageCheck,
                 StatusBreakdown: statusBreakdown
             );
+        }
+        public async Task<List<TopProductDto>> GetTopProductsAsync(Guid shopId, DateTime from, DateTime to, int limit, TopProductSortBy sortBy, CancellationToken ct)
+        {
+            var deliveredOrders = GetDeliveredOrders(from, to, shopId);
+
+            var items = _db.OrderItems.Join(deliveredOrders, oi => oi.OrderId, o => o.Id, (oi, o) => oi);
+
+            var finansialData = items.GroupBy(pi => pi.ProductId).Select(fd => new
+            {
+                Quantity = fd.Sum(q => q.Quantity),
+                Revenue = fd.Sum(r => r.Quantity * r.Price),
+                Payout = fd.Sum(p => p.Payout),
+                ProductId = fd.Key
+            });
+
+            var product = _db.Products.Join(finansialData, p => p.Id, fd => fd.ProductId, (p, fd) => new { p.Id, p.OzonSku, p.Name, fd.Quantity, fd.Revenue, fd.Payout });
+
+            switch (sortBy)
+            {
+                case TopProductSortBy.Items:
+                    product = product.OrderByDescending(p => p.Quantity).ThenBy(p => p.Name);
+                    break;
+                case TopProductSortBy.Revenue:
+                    product = product.OrderByDescending(p => p.Revenue).ThenBy(p => p.Name);
+                    break;
+                default:
+                    product = product.OrderByDescending(p => p.Revenue).ThenBy(p => p.Name);
+                    break;
+            }
+            var currentList = await product.Select(p => new TopProductDto(p.Id, p.OzonSku, p.Name, p.Quantity, p.Revenue, p.Payout)).Take(limit).ToListAsync(ct);
+
+            return currentList;
         }
     }
 }

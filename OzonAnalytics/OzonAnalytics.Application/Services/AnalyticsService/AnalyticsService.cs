@@ -3,6 +3,7 @@ using OzonAnalytics.Application.Exceptions;
 using OzonAnalytics.Application.Interfaces.Analytic;
 using OzonAnalytics.Application.Interfaces.Repositories;
 using OzonAnalytics.Application.ProjectDtos.ResponseDto.AnalyticsResponseDto;
+using OzonAnalytics.Domain.Enums;
 
 namespace OzonAnalytics.Application.Services.AnalyticService
 {
@@ -75,6 +76,14 @@ namespace OzonAnalytics.Application.Services.AnalyticService
             var deltaSummary = new DeltaSummary(OrderCountDiff: orderCountDiff, RevenueDiff: revenueDiff, PayoutDiff: payoutDiff, OrderCountDiffPercent: orderCountDiffPercent, RevenueDiffPercent: revenueDiffPercent, PayoutDiffPercent: payoutDiffPercent);
 
             return new CompareResponseDto(Current: currentFinansialData, Previous: previousFinansialData, Delta: deltaSummary);
+        }
+        public async Task<List<TopProductDto>> TopProductAsync(Guid shopId, Guid userId, DateTime from, DateTime to, int? limit, TopProductSortBy sortBy, CancellationToken ct)
+        {
+            var dateList = await RequestChecker(from, to, userId, shopId, ct);
+
+            var take = Math.Clamp(limit ?? 10, 1, 50);
+
+            return await _analyticsRepository.GetTopProductsAsync(shopId, dateList.FromUtc, dateList.ToUtc, take, sortBy, ct);
         }
     }
 }
