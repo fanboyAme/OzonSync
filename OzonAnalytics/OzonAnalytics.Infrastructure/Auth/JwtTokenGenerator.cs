@@ -1,10 +1,7 @@
-﻿using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using OzonAnalytics.Application.Interfaces.Auth;
 using OzonAnalytics.Domain.Entities;
-using System;
-using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
@@ -15,7 +12,7 @@ namespace OzonAnalytics.Infrastructure.Auth
     public class JwtTokenGenerator : IJwtTokenGenerator
     {
         private readonly JwtOptions _config;
-        
+
         public JwtTokenGenerator(IOptions<JwtOptions> config) { _config = config.Value; }
         public string GenerateAccessToken(ApplicationUser user)
         {

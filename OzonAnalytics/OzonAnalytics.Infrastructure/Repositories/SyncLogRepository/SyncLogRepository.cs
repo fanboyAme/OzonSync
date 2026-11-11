@@ -3,7 +3,7 @@ using OzonAnalytics.Application.Interfaces.Repositories;
 using OzonAnalytics.Domain.Entities;
 using OzonAnalytics.Infrastructure.Database;
 
-namespace OzonAnalytics.Infrastructure.Repositories
+namespace OzonAnalytics.Infrastructure.Repositories.SyncLogRepository
 {
     public class SyncLogRepository : ISyncLogRepository
     {

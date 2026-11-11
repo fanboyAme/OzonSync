@@ -12,5 +12,11 @@ secrets.json
 
 *.log
 
+TestResults/
+.vscode/
+.idea/
+.env
+*.env
+
 .DS_Store
 Thumbs.db
