@@ -61,7 +61,7 @@ namespace OzonAnalytics.Application.Services.Sync
                 if (string.IsNullOrWhiteSpace(apiKey)) throw new InvalidOperationException("Не удалось расшифровать ключ магазина");
                 var clientId = currentShop.OzonClientId;
 
-                var currentSince = since ?? currentShop.LastSyncedAt ?? now.AddDays(-30);
+                var currentSince = since ?? currentShop.LastSyncedAt?.AddDays(-14) ?? now.AddDays(-30);
                 var sinceTo = now;
                 string? currentCursor = null;
                 var currentLimit = limit ?? 50;

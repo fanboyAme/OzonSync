@@ -89,5 +89,28 @@ namespace OzonAnalytics.Infrastructure.Repositories.AnalyticsRepository
 
             return currentList;
         }
+        public async Task<List<TimeSeriesDto>> GetTimeSeriesAsync(Guid shopId, DateTime from, DateTime to, CancellationToken ct)
+        {
+            var tz = TimeZoneInfo.FindSystemTimeZoneById("Europe/Moscow");
+            var deliveredOrders = GetDeliveredOrders(from, to, shopId);
+
+            var orderDays = deliveredOrders.Select(dos => new
+            {
+                Id = dos.Id,
+                Date = TimeZoneInfo.ConvertTimeFromUtc(dos.InProcessAt, tz).Date
+            });
+            var items = await _db.OrderItems.Join(orderDays, oi => oi.OrderId, o => o.Id, (oi, i) => new { oi.Payout, oi.Price, oi.Quantity, oi.OrderId, i.Date })
+                .GroupBy(i => i.Date)
+                .Select(i => new TimeSeriesDto
+            (
+                Date: i.Key,
+                OrderCount: i.Select(oc => oc.OrderId).Distinct().Count(),
+                Revenue: i.Sum(r => r.Quantity * r.Price),
+                Payout: i.Sum(p => p.Payout)
+            )).ToListAsync(ct);
+
+            return items;
+        }
+
     }
 }

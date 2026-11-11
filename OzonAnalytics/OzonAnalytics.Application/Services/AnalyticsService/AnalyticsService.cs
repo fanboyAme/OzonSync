@@ -85,5 +85,34 @@ namespace OzonAnalytics.Application.Services.AnalyticService
 
             return await _analyticsRepository.GetTopProductsAsync(shopId, dateList.FromUtc, dateList.ToUtc, take, sortBy, ct);
         }
+        public async Task<List<TimeSeriesDto>> TimeSeriesAsync(Guid shopId, Guid userId, DateTime from, DateTime to, CancellationToken ct)
+        {
+            var dateList = await RequestChecker(from, to, userId, shopId, ct);
+
+            var timeSeriesList = await _analyticsRepository.GetTimeSeriesAsync(shopId, dateList.FromUtc, dateList.ToUtc, ct);
+
+            var timeSeriesDict = timeSeriesList.ToDictionary(cl => cl.Date);
+
+            var completeTimeSeries = new List<TimeSeriesDto>();
+
+            for (var i = dateList.FromUtc; i < dateList.ToUtc; i = i.AddDays(1))
+            {
+                if (timeSeriesDict.TryGetValue(i, out var items))
+                {
+                    completeTimeSeries.Add(items);
+                }
+                else
+                {
+                    completeTimeSeries.Add(new TimeSeriesDto
+                        (
+                        Date: i,
+                        OrderCount: 0,
+                        Revenue: 0,
+                        Payout: 0
+                        ));
+                }
+            }
+            return completeTimeSeries;
+        }
     }
 }

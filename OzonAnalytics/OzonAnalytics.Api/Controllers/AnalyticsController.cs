@@ -37,6 +37,11 @@ namespace OzonAnalytics.Api.Controllers
             var topProductList = await _analyticsService.TopProductAsync(shopId, _findCurrentUser.FindCurrentUserId(), from, to, limit, sortBy, ct);
             return Ok(topProductList);
         }
-
+        [HttpGet("time-series")]
+        public async Task<IActionResult> TimeSeries(Guid shopId, DateTime from, DateTime to, CancellationToken ct)
+        {
+            var timeSeriesData = await _analyticsService.TimeSeriesAsync(shopId, _findCurrentUser.FindCurrentUserId(), from, to, ct);
+            return Ok(timeSeriesData);
+        }
     }
 }
