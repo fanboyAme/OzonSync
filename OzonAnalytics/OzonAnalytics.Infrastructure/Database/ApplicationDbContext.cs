@@ -33,6 +33,12 @@ namespace OzonAnalytics.Infrastructure.Database
                 .IsUnique();
             modelBuilder.Entity<Order>()
                 .HasIndex(o => new { o.ShopId, o.InProcessAt });
+            modelBuilder.Entity<Order>()
+                .Property(o => o.Status)
+                .HasConversion<string>();
+            modelBuilder.Entity<Order>()
+                .Property(o => o.Substatus)
+                .HasConversion<string>();
 
             modelBuilder.Entity<RefreshToken>()
                 .HasOne<ApplicationUser>()

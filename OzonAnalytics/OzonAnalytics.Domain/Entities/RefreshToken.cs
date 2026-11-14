@@ -7,7 +7,7 @@ namespace OzonAnalytics.Domain.Entities
         public Guid UserId { get; private set; }
         public string TokenHash { get; private set; }
         public DateTime ExpiresAt { get; private set; }
-        public bool Revoked { get; private set;  }
+        public bool Revoked { get; private set; }
 
         public RefreshToken(Guid userId, string tokenHash)
         {
@@ -15,10 +15,10 @@ namespace OzonAnalytics.Domain.Entities
             UserId = userId;
             TokenHash = tokenHash;
             ExpiresAt = DateTime.UtcNow.AddDays(30);
-            Revoked = false;    
+            Revoked = false;
         }
         public void Revoke() => Revoked = true;
-        
+
         public bool IsActive => !Revoked && ExpiresAt > DateTime.UtcNow;
     }
 }

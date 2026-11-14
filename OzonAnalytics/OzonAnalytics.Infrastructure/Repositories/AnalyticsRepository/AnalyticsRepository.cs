@@ -16,7 +16,7 @@ namespace OzonAnalytics.Infrastructure.Repositories.AnalyticsRepository
         }
         private IQueryable<Order> GetDeliveredOrders(DateTime from, DateTime to, Guid shopId)
         {
-            return _db.Orders.Where(o => o.ShopId == shopId && o.Status == "delivered" && o.InProcessAt >= from && o.InProcessAt < to);
+            return _db.Orders.Where(o => o.ShopId == shopId && o.Status == OrderStatusAndSubStatus.Delivered && o.InProcessAt >= from && o.InProcessAt < to);
         }
         private IQueryable<Order> GetOrdersWithDateFilter(DateTime from, DateTime to, Guid shopId)
         {

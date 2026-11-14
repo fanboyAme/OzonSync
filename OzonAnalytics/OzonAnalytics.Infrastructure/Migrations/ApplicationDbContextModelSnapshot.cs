@@ -100,13 +100,11 @@ namespace OzonAnalytics.Infrastructure.Migrations
                     b.Property<Guid>("ShopId")
                         .HasColumnType("uuid");
 
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
 
-                    b.Property<string>("Substatus")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<int>("Substatus")
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 

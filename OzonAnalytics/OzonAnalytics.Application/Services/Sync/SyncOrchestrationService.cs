@@ -6,6 +6,7 @@ using OzonAnalytics.Application.Interfaces.Repositories;
 using OzonAnalytics.Application.Interfaces.Security;
 using OzonAnalytics.Application.Interfaces.Transaction;
 using OzonAnalytics.Application.ProjectDtos.SyncDTO;
+using OzonAnalytics.Application.Services.Mapping;
 using OzonAnalytics.Domain.Entities;
 
 namespace OzonAnalytics.Application.Services.Sync
@@ -88,12 +89,16 @@ namespace OzonAnalytics.Application.Services.Sync
 
                     foreach (var orders in result.Orders)
                     {
+                        var newStatus = MappingService.Map(orders.Status, orders.Substatus);
+
+                        var newSubstatus = MappingService.GetSubstatus(orders.Substatus);
+
                         if (existringOrdersDict.TryGetValue(orders.PostingNumber, out var existingOrder))
                         {
-                            if (existingOrder.Status != orders.Status || existingOrder.Substatus != orders.Substatus)
+                            if (existingOrder.Status != newStatus || existingOrder.Substatus != newSubstatus)
                             {
-                                existingOrder.Status = orders.Status;
-                                existingOrder.Substatus = orders.Substatus;
+                                existingOrder.Status = newStatus;
+                                existingOrder.Substatus = newSubstatus;
 
                                 toUpdateOrder.Add(existingOrder);
                             }
@@ -104,8 +109,8 @@ namespace OzonAnalytics.Application.Services.Sync
                         (
                             shopId,
                             orders.PostingNumber,
-                            orders.Status,
-                            orders.Substatus,
+                            newStatus,
+                            newSubstatus,
                             now,
                             orders.InProcessAt
                         );
