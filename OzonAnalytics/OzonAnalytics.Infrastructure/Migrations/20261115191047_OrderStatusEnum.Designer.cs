@@ -12,7 +12,7 @@ using OzonAnalytics.Infrastructure.Database;
 namespace OzonAnalytics.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20261114113311_OrderStatusEnum")]
+    [Migration("20261115191047_OrderStatusEnum")]
     partial class OrderStatusEnum
     {
         /// <inheritdoc />
@@ -103,11 +103,13 @@ namespace OzonAnalytics.Infrastructure.Migrations
                     b.Property<Guid>("ShopId")
                         .HasColumnType("uuid");
 
-                    b.Property<int>("Status")
-                        .HasColumnType("integer");
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text");
 
-                    b.Property<int>("Substatus")
-                        .HasColumnType("integer");
+                    b.Property<string>("Substatus")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 

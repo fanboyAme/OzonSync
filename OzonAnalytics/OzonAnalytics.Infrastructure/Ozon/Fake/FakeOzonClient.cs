@@ -36,6 +36,7 @@ namespace OzonAnalytics.Infrastructure.Ozon.Fake
             {
         ("awaiting_packaging", "posting_created"),
         ("delivering", "posting_on_way_to_pickup_point"),
+        ("awaiting_deliver", "posting_in_carriage"),
         ("delivered",          "posting_received"),
         ("cancelled",          "posting_canceled"),
     };
