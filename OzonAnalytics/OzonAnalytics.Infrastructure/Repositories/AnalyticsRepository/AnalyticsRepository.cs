@@ -16,7 +16,7 @@ namespace OzonAnalytics.Infrastructure.Repositories.AnalyticsRepository
         }
         private IQueryable<Order> GetDeliveredOrders(DateTime from, DateTime to, Guid shopId)
         {
-            return _db.Orders.Where(o => o.ShopId == shopId && o.Status == "delivered" && o.InProcessAt >= from && o.InProcessAt < to);
+            return _db.Orders.Where(o => o.ShopId == shopId && o.Status == OrderStatusAndSubStatus.Delivered && o.InProcessAt >= from && o.InProcessAt < to);
         }
         private IQueryable<Order> GetOrdersWithDateFilter(DateTime from, DateTime to, Guid shopId)
         {
@@ -92,12 +92,13 @@ namespace OzonAnalytics.Infrastructure.Repositories.AnalyticsRepository
         public async Task<List<TimeSeriesDto>> GetTimeSeriesAsync(Guid shopId, DateTime from, DateTime to, CancellationToken ct)
         {
             var tz = TimeZoneInfo.FindSystemTimeZoneById("Europe/Moscow");
+            var offsetHours = tz.BaseUtcOffset.TotalHours;
             var deliveredOrders = GetDeliveredOrders(from, to, shopId);
 
             var orderDays = deliveredOrders.Select(dos => new
             {
                 Id = dos.Id,
-                Date = TimeZoneInfo.ConvertTimeFromUtc(dos.InProcessAt, tz).Date
+                Date = dos.InProcessAt.AddHours(offsetHours).Date
             });
             var items = await _db.OrderItems.Join(orderDays, oi => oi.OrderId, o => o.Id, (oi, i) => new { oi.Payout, oi.Price, oi.Quantity, oi.OrderId, i.Date })
                 .GroupBy(i => i.Date)
