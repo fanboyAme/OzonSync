@@ -1,9 +1,11 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using OzonAnalytics.Application.Exceptions;
 using OzonAnalytics.Application.Interfaces.Orders;
 using OzonAnalytics.Application.Interfaces.Ozon;
 using OzonAnalytics.Application.Interfaces.Repositories;
 using OzonAnalytics.Application.Interfaces.Security;
+using OzonAnalytics.Application.Interfaces.Sync;
 using OzonAnalytics.Application.Interfaces.Transaction;
 using OzonAnalytics.Application.ProjectDtos.SyncDTO;
 using OzonAnalytics.Application.Services.Mapping;
@@ -27,7 +29,9 @@ namespace OzonAnalytics.Application.Services.Sync
 
         private readonly ITransactionManager _transactionManager;
 
-        public SyncOrchestrationService(IOzonClient ozonClient, IOrderRepository orderRepository, IShopRepository shopRepository, IEncryptionService encryption, IOrderItemRepository orderItemRepository, IProductRepository productRepository, ISyncLogRepository syncLogRepository, ILogger<SyncOrchestrationService> logger, ITransactionManager transactionManager)
+        private readonly ISyncLock _syncLock;
+
+        public SyncOrchestrationService(IOzonClient ozonClient, IOrderRepository orderRepository, IShopRepository shopRepository, IEncryptionService encryption, IOrderItemRepository orderItemRepository, IProductRepository productRepository, ISyncLogRepository syncLogRepository, ILogger<SyncOrchestrationService> logger, ITransactionManager transactionManager, ISyncLock syncLock)
         {
             _client = ozonClient;
             _orderRepository = orderRepository;
@@ -38,17 +42,20 @@ namespace OzonAnalytics.Application.Services.Sync
             _syncLogRepository = syncLogRepository;
             _logger = logger;
             _transactionManager = transactionManager;
+            _syncLock = syncLock;
         }
-        public async Task SyncShopAsync(Guid shopId, Guid userId, DateTime? since, int? limit, CancellationToken ct)
+        public async Task SyncShopAsync(Guid shopId, Guid userId, DateTime? since, int? limit, CancellationToken ct, IConfiguration configuration)
         {
             var now = DateTime.UtcNow;
             var currentShop = await _shopRepository.GetByIdAsync(shopId, ct) ??
                 throw new NotFoundException("Магазин не найден");
             if (currentShop.UserId != userId) throw new ForbiddenException("Доступ отказан");
+
+            var token = await _syncLock.TryAcquireAsync(shopId, TimeSpan.FromMinutes(configuration.GetValue<int>("Sync:LockTtlMinutes", 10))) ?? throw new ConflictException("Магазин уже синхронизируется");
+
             if (currentShop.Status == Domain.Enums.ShopStatus.Syncing) throw new ConflictException("Магазин уже синхронизируется");
 
             SyncLog? syncLog = null;
-
             try
             {
 
@@ -197,6 +204,10 @@ namespace OzonAnalytics.Application.Services.Sync
                 }
 
                 throw;
+            }
+            finally
+            {
+                await _syncLock.ReleaseAsync(shopId, token);
             }
         }
         public async Task<List<SyncLogDto>> GetLogsAsync(Guid shopId, int? limit, Guid userId, CancellationToken ct)

@@ -10,6 +10,7 @@ using OzonAnalytics.Application.Interfaces.Ozon;
 using OzonAnalytics.Application.Interfaces.Repositories;
 using OzonAnalytics.Application.Interfaces.Security;
 using OzonAnalytics.Application.Interfaces.Shops;
+using OzonAnalytics.Application.Interfaces.Sync;
 using OzonAnalytics.Application.Interfaces.Transaction;
 using OzonAnalytics.Application.Services.AnalyticService;
 using OzonAnalytics.Application.Services.ShopService;
@@ -20,6 +21,7 @@ using OzonAnalytics.Infrastructure.Auth;
 using OzonAnalytics.Infrastructure.Database;
 using OzonAnalytics.Infrastructure.Ozon;
 using OzonAnalytics.Infrastructure.Ozon.Fake;
+using OzonAnalytics.Infrastructure.Redis;
 using OzonAnalytics.Infrastructure.Repositories.AnalyticsRepository;
 using OzonAnalytics.Infrastructure.Repositories.OrderItemRepository;
 using OzonAnalytics.Infrastructure.Repositories.OrderRepositrory;
@@ -29,6 +31,7 @@ using OzonAnalytics.Infrastructure.Repositories.SyncLogRepository;
 using OzonAnalytics.Infrastructure.Repositories.UserRepository;
 using OzonAnalytics.Infrastructure.Services.EncryptedService;
 using OzonAnalytics.Infrastructure.Transaction;
+using StackExchange.Redis;
 using System.Text;
 
 namespace OzonAnalytics.Infrastructure;
@@ -40,6 +43,7 @@ public static class DependencyInjection
         IConfiguration configuration)
     {
         AddDatabase(services, configuration);
+        AddRedis(services, configuration);
         AddIdentity(services);
         AddAuthentication(services, configuration);
         AddRepositories(services, configuration);
@@ -58,6 +62,16 @@ public static class DependencyInjection
 
         services.AddDbContext<ApplicationDbContext>(options =>
             options.UseNpgsql(connectionString));
+    }
+
+    private static void AddRedis(
+        IServiceCollection services,
+        IConfiguration configuration)
+    {
+        var connectionString = configuration["Redis:ConnectionString"] ?? throw new InvalidOperationException("Redis: Connecting string is not configured");
+        var options = ConfigurationOptions.Parse(connectionString);
+
+        services.AddSingleton<IConnectionMultiplexer>(_ => ConnectionMultiplexer.Connect(options));
     }
 
     private static void AddIdentity(
@@ -164,5 +178,7 @@ public static class DependencyInjection
         services.AddScoped<ITransactionManager, TransactionManager>();
         services.AddScoped<IEncryptionService, EncryptionService>();
         services.AddDataProtection();
+
+        services.AddScoped<ISyncLock, RedisSyncLock>();
     }
 }
