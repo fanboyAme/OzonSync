@@ -1,9 +1,14 @@
 ﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using OzonAnalytics.Application.Exceptions;
 using OzonAnalytics.Application.Interfaces.Analytic;
+using OzonAnalytics.Application.Interfaces.Cache;
 using OzonAnalytics.Application.Interfaces.Repositories;
+using OzonAnalytics.Application.Options;
 using OzonAnalytics.Application.ProjectDtos.ResponseDto.AnalyticsResponseDto;
 using OzonAnalytics.Domain.Enums;
+
+using System.Text.Json;
 
 namespace OzonAnalytics.Application.Services.AnalyticService
 {
@@ -12,11 +17,15 @@ namespace OzonAnalytics.Application.Services.AnalyticService
         private readonly ILogger<AnalyticsService> _logger;
         private readonly IAnalyticsRepository _analyticsRepository;
         private readonly IShopRepository _shopRepository;
-        public AnalyticsService(IAnalyticsRepository analyticsRepository, ILogger<AnalyticsService> logger, IShopRepository shopRepository)
+        private readonly ICacheService _cacheService;
+        private readonly AnalyticsCacheOptions _analyticsCacheOptions;
+        public AnalyticsService(IAnalyticsRepository analyticsRepository, ILogger<AnalyticsService> logger, IShopRepository shopRepository, ICacheService cacheService, IOptions<AnalyticsCacheOptions> options)
         {
             _analyticsRepository = analyticsRepository;
             _logger = logger;
             _shopRepository = shopRepository;
+            _cacheService = cacheService;
+            _analyticsCacheOptions = options.Value;
         }
         private static DateTime ToUtc(DateTime value)
         {
@@ -48,12 +57,37 @@ namespace OzonAnalytics.Application.Services.AnalyticService
         {
             return await _analyticsRepository.GetFinancialSummaryAsync(from, to, shopId, ct);
         }
+        private async Task<T> GetOrSetAsync<T>(Guid shopId, string method, string parametr, Func<Task<T>> factory)
+        {
+            var versionShop = await _cacheService.GetVersionAsync(shopId);
+            var key = _cacheService.SetKey(shopId, versionShop, method, parametr);
+            var value = await _cacheService.GetValueByKey(key);
+            if (!string.IsNullOrEmpty(value))
+            {
+                try
+                {
+                    var deserializeData = JsonSerializer.Deserialize<T>(value);
+                    if (deserializeData is not null)
+                    {
+                        return deserializeData;
+                    }
+                }
+                catch (JsonException)
+                {
+                    //ошибка может быть если данные DTO изменились, или битый кэш
+                    // добавить логгер
+                }
+            }
+            var data = await factory();
+            await _cacheService.SetValueAsync(key, JsonSerializer.Serialize(data), TimeSpan.FromMinutes(_analyticsCacheOptions.AnalyticsTtlMinutes));
+            return data;
+        }
         public async Task<SummaryResponseDto> GetSummaryAsync(Guid shopId, Guid userId, DateTime from, DateTime to, CancellationToken ct)
         {
             //Даты считаются UTC
             var dateList = await RequestChecker(from, to, userId, shopId, ct);
 
-            return await GetSummaryInternalAsync(dateList.FromUtc, dateList.ToUtc, shopId, ct);
+            return await GetOrSetAsync<SummaryResponseDto>(shopId, "summary", $"{dateList.FromUtc}:{dateList.ToUtc}", () => GetSummaryInternalAsync(dateList.FromUtc, dateList.ToUtc, shopId, ct));
         }
         public async Task<CompareResponseDto> CompareAsync(Guid shopId, Guid userId, DateTime from, DateTime to, CancellationToken ct)
         {
@@ -63,8 +97,8 @@ namespace OzonAnalytics.Application.Services.AnalyticService
 
             var previousFrom = dateList.FromUtc - lenghtPeriod;
 
-            var currentFinansialData = await GetSummaryInternalAsync(dateList.FromUtc, dateList.ToUtc, shopId, ct);
-            var previousFinansialData = await GetSummaryInternalAsync(previousFrom, dateList.FromUtc, shopId, ct);
+            var currentFinansialData = await GetOrSetAsync<SummaryResponseDto>(shopId, "compare", $"{dateList.FromUtc}:{dateList.ToUtc}", () => GetSummaryInternalAsync(dateList.FromUtc, dateList.ToUtc, shopId, ct));
+            var previousFinansialData = await GetOrSetAsync<SummaryResponseDto>(shopId, "compare", $"{dateList.FromUtc}:{dateList.ToUtc}", () => GetSummaryInternalAsync(dateList.FromUtc, dateList.ToUtc, shopId, ct));
 
             var orderCountDiff = currentFinansialData.OrderCount - previousFinansialData.OrderCount;
             var revenueDiff = currentFinansialData.Revenue - previousFinansialData.Revenue;
@@ -83,13 +117,13 @@ namespace OzonAnalytics.Application.Services.AnalyticService
 
             var take = Math.Clamp(limit ?? 10, 1, 50);
 
-            return await _analyticsRepository.GetTopProductsAsync(shopId, dateList.FromUtc, dateList.ToUtc, take, sortBy, ct);
+            return await GetOrSetAsync<List<TopProductDto>>(shopId, "top-product", $"{dateList.FromUtc}:{dateList.ToUtc}:{limit}:{sortBy}", () => _analyticsRepository.GetTopProductsAsync(shopId, dateList.FromUtc, dateList.ToUtc, take, sortBy, ct));
         }
         public async Task<List<TimeSeriesDto>> TimeSeriesAsync(Guid shopId, Guid userId, DateTime from, DateTime to, CancellationToken ct)
         {
             var dateList = await RequestChecker(from, to, userId, shopId, ct);
 
-            var timeSeriesList = await _analyticsRepository.GetTimeSeriesAsync(shopId, dateList.FromUtc, dateList.ToUtc, ct);
+            var timeSeriesList = await GetOrSetAsync<List<TimeSeriesDto>>(shopId, "time-series", $"{dateList.FromUtc}:{dateList.ToUtc}", () => _analyticsRepository.GetTimeSeriesAsync(shopId, dateList.FromUtc, dateList.ToUtc, ct));
 
             var timeSeriesDict = timeSeriesList.ToDictionary(cl => cl.Date);
 

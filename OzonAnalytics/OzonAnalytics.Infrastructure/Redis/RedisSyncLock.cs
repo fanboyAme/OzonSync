@@ -21,7 +21,6 @@ namespace OzonAnalytics.Infrastructure.Redis
         {
             var token = Guid.NewGuid();
             var acquire = await _db.StringSetAsync($"sync-lock:{shopId}", token.ToString(), ttl, when: When.NotExists);
-
             return acquire ? token : null;
         }
         public async Task<bool> ReleaseAsync(Guid shopId, Guid token)
