@@ -1,12 +1,15 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using OzonAnalytics.Application.Exceptions;
+using OzonAnalytics.Application.Interfaces.Cache;
 using OzonAnalytics.Application.Interfaces.Orders;
 using OzonAnalytics.Application.Interfaces.Ozon;
 using OzonAnalytics.Application.Interfaces.Repositories;
 using OzonAnalytics.Application.Interfaces.Security;
 using OzonAnalytics.Application.Interfaces.Sync;
 using OzonAnalytics.Application.Interfaces.Transaction;
+using OzonAnalytics.Application.Options;
 using OzonAnalytics.Application.ProjectDtos.SyncDTO;
 using OzonAnalytics.Application.Services.Mapping;
 using OzonAnalytics.Domain.Entities;
@@ -30,8 +33,21 @@ namespace OzonAnalytics.Application.Services.Sync
         private readonly ITransactionManager _transactionManager;
 
         private readonly ISyncLock _syncLock;
+        private readonly SyncLockOptions _syncLockOptions;
+        private readonly ICacheService _cacheService;
 
-        public SyncOrchestrationService(IOzonClient ozonClient, IOrderRepository orderRepository, IShopRepository shopRepository, IEncryptionService encryption, IOrderItemRepository orderItemRepository, IProductRepository productRepository, ISyncLogRepository syncLogRepository, ILogger<SyncOrchestrationService> logger, ITransactionManager transactionManager, ISyncLock syncLock)
+        public SyncOrchestrationService(IOzonClient ozonClient,
+            IOrderRepository orderRepository,
+            IShopRepository shopRepository,
+            IEncryptionService encryption,
+            IOrderItemRepository orderItemRepository,
+            IProductRepository productRepository,
+            ISyncLogRepository syncLogRepository,
+            ILogger<SyncOrchestrationService> logger,
+            ITransactionManager transactionManager,
+            ISyncLock syncLock,
+            IOptions<SyncLockOptions> options,
+            ICacheService cacheService)
         {
             _client = ozonClient;
             _orderRepository = orderRepository;
@@ -43,6 +59,8 @@ namespace OzonAnalytics.Application.Services.Sync
             _logger = logger;
             _transactionManager = transactionManager;
             _syncLock = syncLock;
+            _syncLockOptions = options.Value;
+            _cacheService = cacheService;
         }
         public async Task SyncShopAsync(Guid shopId, Guid userId, DateTime? since, int? limit, CancellationToken ct, IConfiguration configuration)
         {
@@ -51,7 +69,7 @@ namespace OzonAnalytics.Application.Services.Sync
                 throw new NotFoundException("Магазин не найден");
             if (currentShop.UserId != userId) throw new ForbiddenException("Доступ отказан");
 
-            var token = await _syncLock.TryAcquireAsync(shopId, TimeSpan.FromMinutes(configuration.GetValue<int>("Sync:LockTtlMinutes", 10))) ?? throw new ConflictException("Магазин уже синхронизируется");
+            var token = await _syncLock.TryAcquireAsync(shopId, TimeSpan.FromMinutes(_syncLockOptions.LockTtlMinutes)) ?? throw new ConflictException("Магазин уже синхронизируется");
 
             if (currentShop.Status == Domain.Enums.ShopStatus.Syncing) throw new ConflictException("Магазин уже синхронизируется");
 
@@ -183,6 +201,11 @@ namespace OzonAnalytics.Application.Services.Sync
 
                 syncLog.Complete(totalOrdersSynced);
                 await _syncLogRepository.UpdateAsync(syncLog, ct);
+
+                if (totalOrdersSynced > 0)
+                {
+                    await _cacheService.IncreaseVersionCacheShop(shopId);
+                }
             }
             catch (Exception ex)
             {
