@@ -32,7 +32,7 @@ namespace OzonAnalytics.Infrastructure.Services.Cache
         }
         public async Task<long> IncreaseVersionCacheShop(Guid shopId)
         {
-            return await _db.StringIncrementAsync($"analytics:{shopId}:version ");
+            return await _db.StringIncrementAsync(AnalyticsCacheKeysService.Version(shopId));
         }
         public string SetKey(Guid shopId, long version, string method, string parametr) => AnalyticsCacheKeysService.Data(shopId, version, method, parametr);
     }

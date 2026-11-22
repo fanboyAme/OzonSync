@@ -70,9 +70,6 @@ namespace OzonAnalytics.Application.Services.Sync
             if (currentShop.UserId != userId) throw new ForbiddenException("Доступ отказан");
 
             var token = await _syncLock.TryAcquireAsync(shopId, TimeSpan.FromMinutes(_syncLockOptions.LockTtlMinutes)) ?? throw new ConflictException("Магазин уже синхронизируется");
-
-            if (currentShop.Status == Domain.Enums.ShopStatus.Syncing) throw new ConflictException("Магазин уже синхронизируется");
-
             SyncLog? syncLog = null;
             try
             {
@@ -204,7 +201,15 @@ namespace OzonAnalytics.Application.Services.Sync
 
                 if (totalOrdersSynced > 0)
                 {
-                    await _cacheService.IncreaseVersionCacheShop(shopId);
+                    try
+                    {
+                        await _cacheService.IncreaseVersionCacheShop(shopId);
+                    }
+                    catch (Exception cacheExc)
+                    {
+                        _logger.LogError(cacheExc, $"Не удалось обновить версию кеша магазина {shopId}");
+                    }
+
                 }
             }
             catch (Exception ex)

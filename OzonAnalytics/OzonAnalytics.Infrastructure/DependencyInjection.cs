@@ -88,7 +88,9 @@ public static class DependencyInjection
     {
         var connectionString = configuration["Redis:ConnectionString"] ?? throw new InvalidOperationException("Redis: Connecting string is not configured");
         var options = ConfigurationOptions.Parse(connectionString);
-
+        options.AbortOnConnectFail = false;
+        options.ConnectTimeout = 2000;
+        options.AsyncTimeout = 2000;
         services.AddSingleton<IConnectionMultiplexer>(_ => ConnectionMultiplexer.Connect(options));
     }
 
