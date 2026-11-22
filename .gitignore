@@ -2,10 +2,8 @@ bin/
 obj/
 Logs/
 
-appsettings.json
-appsettings.Development.json
 appsettings.Production.json
-
+appsettings.*.local.json
 secrets.json
 
 .vs/
@@ -13,6 +11,12 @@ secrets.json
 *.suo
 
 *.log
+
+TestResults/
+.vscode/
+.idea/
+.env
+*.env
 
 .DS_Store
 Thumbs.db

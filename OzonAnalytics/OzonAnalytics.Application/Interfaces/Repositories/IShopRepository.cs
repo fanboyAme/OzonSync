@@ -1,0 +1,17 @@
+﻿using OzonAnalytics.Domain.Entities;
+
+namespace OzonAnalytics.Application.Interfaces.Repositories
+{
+    public interface IShopRepository
+    {
+        public Task AddAsync(Shop shop, CancellationToken ct);
+        public Task<Shop?> GetByIdAsync(Guid shopId, CancellationToken ct);
+        public Task<List<Shop>?> GetShopsByUserIdAsync(Guid userId, CancellationToken ct);
+        public Task<Shop?> GetByUserIdAndClientIdAsync(Guid userId, string OzonClientId, CancellationToken ct);
+        public Task UpdateShopAsync(Shop shop, CancellationToken ct);
+        ///< summary >
+        ///Очищаем отслеживаемые сущности EF core чтобы неудачные записи не мешали сохранить статус ошибки
+        ///</ summary >
+        public void ClearTracker();
+    }
+}
